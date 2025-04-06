@@ -92,7 +92,6 @@ Now, users can trade $COFFEE/ETH directly .
 - [Uniswap V2 Whitepaper](https://uniswap.org/whitepaper-v2.pdf)
 - [Solidity Docs](https://docs.soliditylang.org/)
 - [OpenZeppelin Contracts](https://docs.openzeppelin.com/contracts)
-- [Chainlink Docs](https://docs.chain.link/)
 
 ---
 
