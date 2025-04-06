@@ -108,9 +108,8 @@ Now, users can trade $COFFEE/ETH directly — and you can see if your on-chain p
 
 ## 🧑‍💻 Author
 
-Built with ❤️ by [Your Name]  
-Twitter: [@yourhandle]  
-Website: [yourdomain.com]
+Built with ❤️ by [Mohamed-lahrach]  
+Twitter: [@kings5layer]
 
 ---
 
