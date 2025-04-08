@@ -1,7 +1,3 @@
-Perfect! Here's a beginner-friendly, clear `WORKPLAN.md` tailored for **Foundry** and easy readability. Everything is grouped and formatted for quick scanning and ticking off.
-
----
-
 ````markdown
 # ✅ DexTor – Development Work Plan
 
