@@ -42,7 +42,7 @@ contract DexTorERC20 is ERC20, ERC20Permit, ERC20Burnable, Ownable {
      * @param _amount amount of tokens to burn
      * @dev This function allows the caller to burn a specified amount of tokens from their own balance.
      */
-    function burn(uint256 _amount) public override onlyOwner {
+    function burn(uint256 _amount) public override {
         uint256 balance = balanceOf(msg.sender);
         if (_amount <= 0) {
             revert DexTorERC20__MustBeMoreThanZero();

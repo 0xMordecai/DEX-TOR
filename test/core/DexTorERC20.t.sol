@@ -47,4 +47,54 @@ contract DexTorERC20Test is Test {
         assertEq(dexTorERC20.balanceOf(user), mintAmount);
         vm.stopPrank();
     }
+
+    ////////////////////////////////////////
+    //////////// Burn Test ////////////////
+    //////////////////////////////////////
+
+    modifier Minted() {
+        vm.startPrank(owner);
+        iDexTorERC20.mint(user, mintAmount);
+        vm.stopPrank();
+        _;
+    }
+
+    function test_burnRevertIfAmountIsZero() public Minted {
+        vm.startPrank(user);
+        vm.expectRevert(DexTorERC20.DexTorERC20__MustBeMoreThanZero.selector);
+        dexTorERC20.burn(0);
+        vm.stopPrank();
+    }
+
+    function test_burnRevertIfBalanceIsLessThanAmount() public Minted {
+        vm.startPrank(user);
+        vm.expectRevert(
+            DexTorERC20.DexTorERC20__BurnAmountExceedsBalance.selector
+        );
+        dexTorERC20.burn(mintAmount + 1);
+        vm.stopPrank();
+    }
+
+    function test_burnCheckBalance() public Minted {
+        vm.startPrank(user);
+        assertEq(dexTorERC20.balanceOf(user), mintAmount);
+        vm.stopPrank();
+    }
+
+    ////////////////////////////////////////////
+    //////////// Gettters Test ////////////////
+    //////////////////////////////////////////
+    function test_getTotalSupply() public {
+        vm.startPrank(owner);
+        iDexTorERC20.mint(user, mintAmount);
+        assertEq(iDexTorERC20.getTotalSupply(), mintAmount);
+        vm.stopPrank();
+    }
+
+    function test_getBalanceOf() public {
+        vm.startPrank(owner);
+        iDexTorERC20.mint(user, mintAmount);
+        assertEq(iDexTorERC20.getBalanceOf(user), mintAmount);
+        vm.stopPrank();
+    }
 }
