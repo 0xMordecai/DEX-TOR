@@ -41,7 +41,7 @@ No frontend, no oracle — just clean, secure smart contracts.
 
 ## 🔁 PHASE 2: Core Contracts
 
-### 2.1 🪙 DexTorERC20 (LP Token)
+### 2.1 🪙 DexTorERC20 (LP Token) : Done
 
 - [ ] Inherit from `ERC20`
 - [ ] Add `mint(address, amount)` and `burn(address, amount)`
