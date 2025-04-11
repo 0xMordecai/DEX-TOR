@@ -14,6 +14,23 @@ contract DexTorPair {
     uint112 private reserve1;
     uint32 private blockTimestampLast;
 
+    event Mint(address indexed sender, uint256 amount0, uint256 amount1);
+    event Burn(
+        address indexed sender,
+        uint256 amount0,
+        uint256 amount1,
+        address indexed to
+    );
+    event Swap(
+        address indexed sender,
+        uint256 amount0In,
+        uint256 amount1In,
+        uint256 amount0Out,
+        uint256 amount1Out,
+        address indexed to
+    );
+    event Sync(uint112 reserve0, uint112 reserve1);
+
     constructor(address _token0, address _token1) {
         if (_token0 == address(0) || _token0 == address(0)) {
             revert DexTorPair__ZeroAddress();
@@ -23,6 +40,7 @@ contract DexTorPair {
         }
         token0 = _token0;
         token1 = _token1;
+        factory = msg.sender;
     }
 
     function getReserves()
