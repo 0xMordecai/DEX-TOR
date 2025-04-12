@@ -5,13 +5,14 @@ contract DexTorPair {
     error DexTorPair__ZeroAddress();
     error DexTorPair__TokensHaveSameAddresses();
     error DexTorPair__BurnAmountExceedsBalance();
+    error DexTorPair__LOCKED();
 
-    address public factory;
+    address public immutable factory;
     address public immutable token0;
     address public immutable token1;
 
-    uint112 private reserve0;
-    uint112 private reserve1;
+    uint256 private reserve0;
+    uint256 private reserve1;
     uint32 private blockTimestampLast;
 
     event Mint(address indexed sender, uint256 amount0, uint256 amount1);
@@ -29,7 +30,7 @@ contract DexTorPair {
         uint256 amount1Out,
         address indexed to
     );
-    event Sync(uint112 reserve0, uint112 reserve1);
+    event Sync(uint256 reserve0, uint256 reserve1);
 
     constructor(address _token0, address _token1) {
         if (_token0 == address(0) || _token0 == address(0)) {
@@ -43,12 +44,22 @@ contract DexTorPair {
         factory = msg.sender;
     }
 
+    uint256 private unlocked = 1;
+    modifier lock() {
+        if (unlocked != 1) {
+            revert DexTorPair__LOCKED();
+        }
+        unlocked = 0;
+        _;
+        unlocked = 1;
+    }
+
     function getReserves()
         public
         view
         returns (
-            uint112 _reserve0,
-            uint112 _reserve1,
+            uint256 _reserve0,
+            uint256 _reserve1,
             uint32 _blockTimestampLast
         )
     {
