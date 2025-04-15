@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
-import {UQ112x112} from "src/core/libraries/UQ112x112.sol";
+import {UQ112x112, Math} from "src/core/libraries/UQ112x112.sol";
+import {IDexTorFactory} from "src/core/interfaces/IDexTorFactory.sol";
 
 contract DexTorPair {
     using UQ112x112 for uint224;
@@ -103,5 +104,39 @@ contract DexTorPair {
         blockTimestampLast = blockTimestamp;
 
         emit Sync(reserve0, reserve1);
+    }
+
+    /**
+     * @dev The _mintFee function calculates and mints liquidity tokens as a fee if certain conditions are met.
+     *  The fee is based on the growth in the square root of the product of the reserves (k).
+     *  This mechanism is used in Uniswap V2 to ensure that liquidity providers (LPs) are incentivized and properly rewarded when the protocol's fee mechanism is active.
+     * @param _reserve0 token0 reserve
+     * @param _reserve1 token1 reserve
+     * @return feeOn boolean indicating if the fee is on or not
+     */
+    function _mintFee(
+        uint112 _reserve0,
+        uint112 _reserve1
+    ) private returns (bool feeOn) {
+        // If the fee mechanism is active (feeOn == true) and _kLast is not zero:
+        // Calculate rootK and rootKLast:
+        // rootK is the square root of the current product of reserves (_reserve0 * _reserve1).
+        // rootKLast is the square root of the previous product of reserves (_kLast).
+        // Ensure Growth in Product of Reserves:
+        // If rootK (current) is greater than rootKLast (previous), it means the reserves have grown, and liquidity fees need to be minted.
+        // Calculate Liquidity:
+        // numerator is the product of the total supply of liquidity tokens (totalSupply) and the growth in reserves (rootK - rootKLast).
+        // denominator is a weighted sum of the current and previous reserves (rootK * 5 + rootKLast).
+        // liquidity is the amount of liquidity tokens to mint, calculated as numerator / denominator.
+        // Mint Liquidity:
+        // If liquidity > 0, mint the calculated amount of liquidity tokens to the feeTo address.
+        address feeTo = IDexTorFactory(factory).getFeeTo();
+        if (feeTo != address(0)) {
+            feeOn = true;
+        } else {
+            feeOn = false;
+        }
+        uint _kLast = kLast;
+        if (feeOn && _kLast != 0) {}
     }
 }
