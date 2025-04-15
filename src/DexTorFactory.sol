@@ -56,4 +56,12 @@ contract DexTorFactory is IDexTorFactory {
     function allPairsLength() external view returns (uint) {
         return allPairs.length;
     }
+
+    function getFeeTo() external view returns (address) {
+        return feeTo;
+    }
+
+    function getFeeToSetter() external view returns (address) {
+        return feeToSetter;
+    }
 }
