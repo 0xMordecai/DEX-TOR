@@ -2,9 +2,11 @@
 pragma solidity 0.8.28;
 import {UQ112x112, Math} from "src/core/libraries/UQ112x112.sol";
 import {IDexTorFactory} from "src/core/interfaces/IDexTorFactory.sol";
+import {DexTorERC20} from "src/core/DexTorERC20.sol";
 
-contract DexTorPair {
+contract DexTorPair is DexTorERC20 {
     using UQ112x112 for uint224;
+    using Math for uint;
     error DexTorPair__ZeroAddress();
     error DexTorPair__TokensHaveSameAddresses();
     error DexTorPair__BurnAmountExceedsBalance();
@@ -137,6 +139,19 @@ contract DexTorPair {
             feeOn = false;
         }
         uint _kLast = kLast;
-        if (feeOn && _kLast != 0) {}
+        if (feeOn && _kLast != 0) {
+            uint rootK = Math.sqrt(uint(_reserve0) * uint(_reserve1));
+            uint rootKLast = Math.sqrt(_kLast);
+            if (rootK > rootKLast) {
+                uint numerator = totalSupply() * (rootK - rootKLast);
+                uint denominator = (rootK * 5 + rootKLast);
+                uint liquidity = numerator / denominator;
+                if (liquidity > 0) {
+                    _mint(feeTo, liquidity);
+                }
+            }
+        } else if (_kLast != 0) {
+            kLast = 0;
+        }
     }
 }
