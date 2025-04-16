@@ -47,7 +47,7 @@ No frontend, no oracle — just clean, secure smart contracts.
 - [ ] Add `mint(address, amount)` and `burn(address, amount)`
 - [ ] Keep track of total supply and balances
 
-### 2.2 💧 DexTorPair (Swaps & Liquidity)
+### 2.2 💧 DexTorPair (Swaps & Liquidity) 85 % done
 
 - [ ] Store `token0`, `token1`
 - [ ] Store `reserve0`, `reserve1`
@@ -57,7 +57,7 @@ No frontend, no oracle — just clean, secure smart contracts.
 - [ ] Charge a small swap fee (e.g., 0.3%)
 - [ ] Add `sync()` to update reserves
 
-### 2.3 🏭 DexTorFactory
+### 2.3 🏭 DexTorFactory 85 % done
 
 - [ ] Deploy new `DexTorPair` contracts with `create2`
 - [ ] Ensure unique token pairs
