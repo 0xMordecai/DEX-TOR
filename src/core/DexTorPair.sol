@@ -3,6 +3,7 @@ pragma solidity 0.8.28;
 import {UQ112x112, Math} from "src/core/libraries/UQ112x112.sol";
 import {IDexTorFactory} from "src/core/interfaces/IDexTorFactory.sol";
 import {DexTorERC20} from "src/core/DexTorERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract DexTorPair is DexTorERC20 {
     using UQ112x112 for uint224;
@@ -12,6 +13,10 @@ contract DexTorPair is DexTorERC20 {
     error DexTorPair__BurnAmountExceedsBalance();
     error DexTorPair__LOCKED();
     error DexTorPair__BalanceExceedsUint112Max();
+    error DexTorPair__ZeroBalances();
+    error DexTorPair__ZeroLiquidity();
+
+    uint private constant MINIMUM_LIQUIDITY = 10 ** 3;
 
     address public immutable factory;
     address public immutable token0;
@@ -150,8 +155,78 @@ contract DexTorPair is DexTorERC20 {
                     _mint(feeTo, liquidity);
                 }
             }
-        } else if (_kLast != 0) {
+        } else if (!feeOn && _kLast != 0) {
             kLast = 0;
         }
+    }
+
+    function mint(address to) external lock returns (uint liquidity) {
+        /**
+         * @dev Retrieve Current Reserves
+         */
+        (uint112 _reserve0, uint112 _reserve1, ) = getReserves();
+        /**
+         * @dev Get Token Balances:
+         */
+        uint balance0 = IERC20(token0).balanceOf(address(this));
+        uint balance1 = IERC20(token1).balanceOf(address(this));
+        if (balance0 == 0 || balance1 == 0) {
+            revert DexTorPair__ZeroBalances();
+        }
+        /**
+         * @dev Calculate Amounts Added
+         */
+        uint amount0 = balance0 - _reserve0;
+        uint amount1 = balance1 - _reserve1;
+        /**
+         * @dev Calls _mintFee to determine if the protocol fee is enabled
+         * and possibly mint a fee
+         */
+        bool feeOn = _mintFee(_reserve0, _reserve1);
+        /**
+         * @dev Calculate Liquidity to Mint
+         */
+        uint _totalSupply = totalSupply();
+        /**
+         * @devIf the pool is new (_totalSupply == 0),
+         * it calculates the initial liquidity tokens proportional to the geometric mean of amount0 and amount1.
+         * It also permanently locks a small amount (MINIMUM_LIQUIDITY) to prevent the pool from being drained completely.
+         */
+        if (_totalSupply == 0) {
+            liquidity = Math.sqrt(amount0 * amount1) - MINIMUM_LIQUIDITY;
+            _mint(address(0), MINIMUM_LIQUIDITY); // permanently lock the minimum liquidity
+        } else {
+            /**
+             * @dev If the pool is not new, it calculates the liquidity tokens based on the ratio of the amounts added to the reserves.
+             * @notice The ternary operator (condition ? value1 : value2) is used to select the smaller value between the two calculations.
+             */
+            liquidity = ((amount0 * _totalSupply) / _reserve0 <
+                (amount1 * _totalSupply) / _reserve1)
+                ? ((amount0 * _totalSupply) / _reserve0)
+                : ((amount1 * _totalSupply) / _reserve1);
+        }
+        if (liquidity <= 0) {
+            revert DexTorPair__ZeroLiquidity();
+        }
+        /**
+         * @dev Mint Liquidity Tokens
+         */
+        _mint(to, liquidity);
+
+        /**
+         * @dev Update Reserves
+         */
+        _update(balance0, balance1, _reserve0, _reserve1);
+
+        /**
+         * @dev Store kLast if Fees Are On
+         */
+        if (feeOn) {
+            kLast = uint(reserve0) * uint(reserve1);
+        }
+        /**
+         * @dev Emit Mint Event
+         */
+        emit Mint(msg.sender, amount0, amount1);
     }
 }
