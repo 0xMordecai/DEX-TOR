@@ -229,4 +229,35 @@ contract DexTorPair is DexTorERC20 {
          */
         emit Mint(msg.sender, amount0, amount1);
     }
+
+    function burn(
+        address to
+    ) external lock returns (uint amount0, uint amount1) {
+        /**
+         * @dev Retrieve Current Reserves
+         */
+        (uint112 _reserve0, uint112 _reserve1, ) = getReserves();
+        /**
+         * @dev Get Token Balances:
+         */
+        uint balance0 = IERC20(token0).balanceOf(address(this));
+        uint balance1 = IERC20(token1).balanceOf(address(this));
+        if (balance0 == 0 || balance1 == 0) {
+            revert DexTorPair__ZeroBalances();
+        }
+        /**
+         * @dev Calculate Amounts Added
+         */
+        uint amount0 = balance0 - _reserve0;
+        uint amount1 = balance1 - _reserve1;
+        /**
+         * @dev Calls _mintFee to determine if the protocol fee is enabled
+         * and possibly mint a fee
+         */
+        bool feeOn = _mintFee(_reserve0, _reserve1);
+        /**
+         * @dev Calculate Liquidity to Mint
+         */
+        uint _totalSupply = totalSupply();
+    }
 }
