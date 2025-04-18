@@ -242,6 +242,12 @@ contract DexTorPair is DexTorERC20 {
         emit Mint(msg.sender, amount0, amount1);
     }
 
+    /**
+     * @dev The burn function allows a liquidity provider to remove their liquidity from the pool.
+     * @param to address to send the tokens to
+     * @return amount0
+     * @return amount1
+     */
     function burn(
         address to
     ) external lock returns (uint amount0, uint amount1) {
