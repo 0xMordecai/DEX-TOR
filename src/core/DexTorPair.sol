@@ -251,31 +251,51 @@ contract DexTorPair is DexTorERC20 {
         (uint112 _reserve0, uint112 _reserve1, ) = getReserves();
         /**
          * @dev Get Token Balances:
+         * @notice Saves gas by fetching token0 and token1 addresses into local variables.
          */
         address _token0 = token0;
         address _token1 = token1;
+        /**
+         * @dev Get Balances and Liquidity
+         */
         uint balance0 = IERC20(_token0).balanceOf(address(this));
         uint balance1 = IERC20(_token1).balanceOf(address(this));
         if (balance0 == 0 || balance1 == 0) {
             revert DexTorPair__ZeroBalances();
         }
-
         uint liquidity = balanceOf(address(this));
-
+        /**
+         * @dev Mint Fee (if applicable)
+         * Checks if a protocol fee is active and mints the fee to the fee recipient.
+         */
         bool feeOn = _mintFee(_reserve0, _reserve1);
+        /**
+         * @dev Calculate Withdrawal Amounts
+         * Calculates how much of token0 and token1 should be returned to the liquidity provider
+         * based on their share of the total supply (liquidity / totalSupply).
+         */
         uint _totalSupply = totalSupply();
         amount0 = (liquidity * balance0) / _totalSupply;
         amount1 = (liquidity * balance1) / _totalSupply;
         if (amount0 <= 0 && amount1 <= 0) {
             revert DexTorPair__ZeroAmounts();
         }
+        /**
+         * @dev Burn Liquidity Tokens
+         * @notice The _burn function is called to remove the liquidity tokens from the pool.
+         */
         _burn(address(this), liquidity);
+        /**
+         * @dev Transfer Tokens to User
+         * @notice Transfers the proportionate amounts of token0 and token1 to the specified address (to).
+         */
         _safeTransfer(_token0, to, amount0);
         _safeTransfer(_token1, to, amount1);
-
+        /**
+         * @dev Update Balances and Reserves
+         */
         balance0 = IERC20(_token0).balanceOf(address(this));
         balance1 = IERC20(_token1).balanceOf(address(this));
-
         _update(balance0, balance1, _reserve0, _reserve1);
         /**
          * @dev Store kLast if Fees Are On
