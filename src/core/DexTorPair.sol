@@ -329,4 +329,16 @@ contract DexTorPair is DexTorERC20 {
         _safeTransfer(_token0, to, amount0);
         _safeTransfer(_token1, to, amount1);
     }
+
+    /**
+     * @dev force reserves to match balances
+     */
+    function sync() external lock {
+        _update(
+            IERC20(token0).balanceOf(address(this)),
+            IERC20(token1).balanceOf(address(this)),
+            reserve0,
+            reserve1
+        );
+    }
 }
