@@ -314,4 +314,19 @@ contract DexTorPair is DexTorERC20 {
          */
         emit Burn(msg.sender, amount0, amount1, to);
     }
+
+    /**
+     * @dev // force balances to match reserves
+     */
+    function skim(address to) external lock {
+        address _token0 = token0; // gas savings
+        address _token1 = token1; // gas savings
+        uint amount0 = IERC20(_token0).balanceOf(address(this)) -
+            uint(reserve0);
+        uint amount1 = IERC20(_token0).balanceOf(address(this)) -
+            uint(reserve1);
+
+        _safeTransfer(_token0, to, amount0);
+        _safeTransfer(_token1, to, amount1);
+    }
 }
