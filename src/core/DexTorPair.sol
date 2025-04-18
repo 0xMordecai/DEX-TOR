@@ -15,6 +15,8 @@ contract DexTorPair is DexTorERC20 {
     error DexTorPair__BalanceExceedsUint112Max();
     error DexTorPair__ZeroBalances();
     error DexTorPair__ZeroLiquidity();
+    error DexTorPair__ZeroAmounts();
+    error DexTorPair__TransferFailed();
 
     uint private constant MINIMUM_LIQUIDITY = 10 ** 3;
 
@@ -81,6 +83,16 @@ contract DexTorPair is DexTorERC20 {
         _reserve0 = reserve0;
         _reserve1 = reserve1;
         _blockTimestampLast = blockTimestampLast;
+    }
+
+    function _safeTransfer(address token, address to, uint256 value) private {
+        (bool success, ) = token.call(
+            abi.encodeWithSignature("transfer(address,uint256)", to, value)
+        );
+
+        if (!success) {
+            revert DexTorPair__TransferFailed();
+        }
     }
 
     function _update(
@@ -240,24 +252,40 @@ contract DexTorPair is DexTorERC20 {
         /**
          * @dev Get Token Balances:
          */
-        uint balance0 = IERC20(token0).balanceOf(address(this));
-        uint balance1 = IERC20(token1).balanceOf(address(this));
+        address _token0 = token0;
+        address _token1 = token1;
+        uint balance0 = IERC20(_token0).balanceOf(address(this));
+        uint balance1 = IERC20(_token1).balanceOf(address(this));
         if (balance0 == 0 || balance1 == 0) {
             revert DexTorPair__ZeroBalances();
         }
-        /**
-         * @dev Calculate Amounts Added
-         */
-        uint amount0 = balance0 - _reserve0;
-        uint amount1 = balance1 - _reserve1;
-        /**
-         * @dev Calls _mintFee to determine if the protocol fee is enabled
-         * and possibly mint a fee
-         */
+
+        uint liquidity = balanceOf(address(this));
+
         bool feeOn = _mintFee(_reserve0, _reserve1);
-        /**
-         * @dev Calculate Liquidity to Mint
-         */
         uint _totalSupply = totalSupply();
+        amount0 = (liquidity * balance0) / _totalSupply;
+        amount1 = (liquidity * balance1) / _totalSupply;
+        if (amount0 <= 0 && amount1 <= 0) {
+            revert DexTorPair__ZeroAmounts();
+        }
+        _burn(address(this), liquidity);
+        _safeTransfer(_token0, to, amount0);
+        _safeTransfer(_token1, to, amount1);
+
+        balance0 = IERC20(_token0).balanceOf(address(this));
+        balance1 = IERC20(_token1).balanceOf(address(this));
+
+        _update(balance0, balance1, _reserve0, _reserve1);
+        /**
+         * @dev Store kLast if Fees Are On
+         */
+        if (feeOn) {
+            kLast = uint(reserve0) * uint(reserve1);
+        }
+        /**
+         * @dev Emit Burn Event
+         */
+        emit Burn(msg.sender, amount0, amount1, to);
     }
 }
