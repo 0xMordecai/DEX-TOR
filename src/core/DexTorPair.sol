@@ -17,6 +17,8 @@ contract DexTorPair is DexTorERC20 {
     error DexTorPair__ZeroLiquidity();
     error DexTorPair__ZeroAmounts();
     error DexTorPair__TransferFailed();
+    error DexTorPair__SwapAmountExceedsBalance();
+    error DexTorPair__InvalidTo();
 
     uint private constant MINIMUM_LIQUIDITY = 10 ** 3;
 
@@ -313,6 +315,67 @@ contract DexTorPair is DexTorERC20 {
          * @dev Emit Burn Event
          */
         emit Burn(msg.sender, amount0, amount1, to);
+    }
+
+    function swap(
+        uint amount0Out,
+        uint amount1Out,
+        address to,
+        bytes calldata data
+    ) external lock {
+        if (amount0Out <= 0 || amount1Out <= 0) {
+            revert DexTorPair__ZeroAmounts();
+        }
+        (uint112 _reserve0, uint112 _reserve1, ) = getReserves();
+        if (amount0Out >= _reserve0 || amount1Out >= _reserve1) {
+            revert DexTorPair__SwapAmountExceedsBalance();
+        }
+        uint balance0;
+        uint balance1;
+        {
+            // scope for _token{0,1}, avoids stack too deep errors
+            address _token0 = token0;
+            address _token1 = token1;
+            if (to == _token0 || to == _token1) {
+                revert DexTorPair__InvalidTo();
+            }
+            if (amount0Out > 0) {
+                _safeTransfer(_token0, to, amount0Out);
+            }
+            if (amount1Out > 0) {
+                _safeTransfer(_token1, to, amount1Out);
+            }
+            if (data.length > 0) {
+                // callback to the recipient
+                (bool success, ) = to.call(data);
+                if (!success) {
+                    revert DexTorPair__TransferFailed();
+                }
+            }
+            balance0 = IERC20(token0).balanceOf(address(this));
+            balance1 = IERC20(token1).balanceOf(address(this));
+        }
+        uint amount0In = balance0 > _reserve0 - amount0Out
+            ? balance0 - (_reserve0 - amount0Out)
+            : 0;
+        uint amount1In = balance1 > _reserve1 - amount1Out
+            ? balance1 - (_reserve1 - amount1Out)
+            : 0;
+        if (amount0In <= 0 || amount1In <= 0) {
+            revert DexTorPair__ZeroAmounts();
+        }
+        {
+            uint balance0Adjusted = (balance0 * 1000) - (amount0In * 3);
+            uint balance1Adjusted = (balance1 * 1000) - (amount1In * 3);
+            if (
+                balance0Adjusted * balance1Adjusted <
+                uint(reserve0) * uint(reserve1) * 1000 ** 2
+            ) {
+                revert DexTorPair__SwapAmountExceedsBalance();
+            }
+        }
+        _update(balance0, balance1, _reserve0, _reserve1);
+        emit Swap(msg.sender, amount0In, amount1In, amount0Out, amount1Out, to);
     }
 
     /**
