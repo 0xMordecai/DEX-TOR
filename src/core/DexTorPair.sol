@@ -317,56 +317,87 @@ contract DexTorPair is DexTorERC20 {
         emit Burn(msg.sender, amount0, amount1, to);
     }
 
+    /**
+     * @notice Executes a token swap between token0 and token1.
+     * @dev This function allows users to swap tokens by specifying the output amounts for token0 and token1.
+     *      It ensures that the swap respects the pool's reserves and maintains the invariant.
+     * @param amount0Out The amount of token0 to send to the recipient.
+     * @param amount1Out The amount of token1 to send to the recipient.
+     * @param to The address to receive the output tokens.
+     * @param data Additional data to be passed to the recipient for callback execution.
+     */
     function swap(
         uint amount0Out,
         uint amount1Out,
         address to,
         bytes calldata data
     ) external lock {
+        // Ensure at least one of the output amounts is greater than zero
         if (amount0Out <= 0 || amount1Out <= 0) {
             revert DexTorPair__ZeroAmounts();
         }
+
+        // Retrieve the current reserves of token0 and token1
         (uint112 _reserve0, uint112 _reserve1, ) = getReserves();
+
+        // Ensure the output amounts do not exceed the current reserves
         if (amount0Out >= _reserve0 || amount1Out >= _reserve1) {
             revert DexTorPair__SwapAmountExceedsBalance();
         }
+
         uint balance0;
         uint balance1;
+
         {
-            // scope for _token{0,1}, avoids stack too deep errors
+            // Scope for local variables to avoid stack too deep errors
             address _token0 = token0;
             address _token1 = token1;
+
+            // Ensure the recipient address is not one of the token addresses
             if (to == _token0 || to == _token1) {
                 revert DexTorPair__InvalidTo();
             }
+
+            // Transfer the specified output amounts to the recipient
             if (amount0Out > 0) {
                 _safeTransfer(_token0, to, amount0Out);
             }
             if (amount1Out > 0) {
                 _safeTransfer(_token1, to, amount1Out);
             }
+
+            // If additional data is provided, execute a callback to the recipient
             if (data.length > 0) {
-                // callback to the recipient
                 (bool success, ) = to.call(data);
                 if (!success) {
                     revert DexTorPair__TransferFailed();
                 }
             }
+
+            // Update the balances of token0 and token1 after the transfers
             balance0 = IERC20(token0).balanceOf(address(this));
             balance1 = IERC20(token1).balanceOf(address(this));
         }
+
+        // Calculate the input amounts for token0 and token1
         uint amount0In = balance0 > _reserve0 - amount0Out
             ? balance0 - (_reserve0 - amount0Out)
             : 0;
         uint amount1In = balance1 > _reserve1 - amount1Out
             ? balance1 - (_reserve1 - amount1Out)
             : 0;
+
+        // Ensure at least one of the input amounts is greater than zero
         if (amount0In <= 0 || amount1In <= 0) {
             revert DexTorPair__ZeroAmounts();
         }
+
         {
+            // Adjust the balances to account for a 0.3% fee on the input amounts
             uint balance0Adjusted = (balance0 * 1000) - (amount0In * 3);
             uint balance1Adjusted = (balance1 * 1000) - (amount1In * 3);
+
+            // Ensure the invariant (k = reserve0 * reserve1) is maintained
             if (
                 balance0Adjusted * balance1Adjusted <
                 uint(reserve0) * uint(reserve1) * 1000 ** 2
@@ -374,7 +405,11 @@ contract DexTorPair is DexTorERC20 {
                 revert DexTorPair__SwapAmountExceedsBalance();
             }
         }
+
+        // Update the reserves to match the new balances
         _update(balance0, balance1, _reserve0, _reserve1);
+
+        // Emit a Swap event with details of the transaction
         emit Swap(msg.sender, amount0In, amount1In, amount0Out, amount1Out, to);
     }
 
