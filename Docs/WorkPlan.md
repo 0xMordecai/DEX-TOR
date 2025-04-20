@@ -1,4 +1,4 @@
-````markdown
+```markdown
 # ✅ DexTor – Development Work Plan
 
 This is a step-by-step plan to build **DexTor**, a Uniswap V2-style DEX using modern **Solidity** and **Foundry**.  
@@ -12,15 +12,10 @@ No frontend, no oracle — just clean, secure smart contracts.
 
 ### Tasks:
 
-- [ ] Install Foundry if you haven't: `curl -L https://foundry.paradigm.xyz | bash`
-- [ ] Run `foundryup`
-- [ ] Create a new project: `forge init dex-tor`
-- [ ] Set Solidity version in `foundry.toml`:
-  ```toml
-  [profile.default]
-  solc_version = "0.8.20"
-  ```
-````
+- [Done] Install Foundry if you haven't: `curl -L https://foundry.paradigm.xyz | bash`
+- [Done] Run `foundryup`
+- [Done] Create a new project: `forge init`
+```
 
 - [ ] Install OpenZeppelin:  
        `forge install OpenZeppelin/openzeppelin-contracts`
@@ -43,19 +38,17 @@ No frontend, no oracle — just clean, secure smart contracts.
 
 ### 2.1 🪙 DexTorERC20 (LP Token) : Done
 
-- [ ] Inherit from `ERC20`
-- [ ] Add `mint(address, amount)` and `burn(address, amount)`
-- [ ] Keep track of total supply and balances
+- [Done] Inherit from `ERC20`
+- [Done] Add `mint(address, amount)` and `burn(address, amount)`
+- [Done] Keep track of total supply and balances
 
-### 2.2 💧 DexTorPair (Swaps & Liquidity) 85 % done
+### 2.2 💧 DexTorPair (Swaps & Liquidity) Done
 
-- [ ] Store `token0`, `token1`
-- [ ] Store `reserve0`, `reserve1`
-- [ ] Implement `addLiquidity()` → mints LP tokens
-- [ ] Implement `removeLiquidity()` → burns LP tokens
-- [ ] Implement `swap()` → apply formula: `x * y = k`
-- [ ] Charge a small swap fee (e.g., 0.3%)
-- [ ] Add `sync()` to update reserves
+- [Done] Store `token0`, `token1`
+- [Done] Store `reserve0`, `reserve1`
+- [Done] Implement `swap()` → apply formula: `x * y = k`
+- [Done] Charge a small swap fee (e.g., 0.3%)
+- [Done] Add `sync()` to update reserves
 
 ### 2.3 🏭 DexTorFactory 85 % done
 
