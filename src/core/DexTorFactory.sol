@@ -46,7 +46,6 @@ contract DexTorFactory is IDexTorFactory {
         /**
          * type(UniswapV2Pair).creationCode returns the initialization (creation) bytecode of the UniswapV2Pair contract.
          */
-        bytes memory bytecode = type(DexTorPair).creationCode;
         bytes32 salt = keccak256(abi.encodePacked(token0, token1));
         pair = address(new DexTorPair{salt: salt}(token0, token1));
         TokensPair[token0][token1] = pair;
