@@ -69,7 +69,7 @@ contract DexTorFactory is IDexTorFactory {
         bytes32 salt = keccak256(abi.encodePacked(token0, token1));
 
         // Deploy the new pair contract using the `DexTorPair` constructor
-        pair = address(new DexTorPair{salt: salt}(token0, token1));
+        pair = address(new DexTorPair{salt: salt}(token0, token1, feeToSetter));
 
         // Store the pair address in the mapping for both token orders
         TokensPair[token0][token1] = pair;

@@ -42,4 +42,13 @@ contract DexTorPairTest is Test {
             address(dexTorFactory)
         );
     }
+
+    // function testDeployment() public {
+    //     // Check token addresses
+    //     assertEq(dexTorPair.token0(), address(tokenA));
+    //     assertEq(dexTorPair.token1(), address(tokenB));
+
+    //     // Check factory address
+    //     assertEq(dexTorPair.factory(), owner);
+    // }
 }
