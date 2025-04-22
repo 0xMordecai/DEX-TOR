@@ -34,5 +34,12 @@ contract DexTorPairTest is Test {
 
         // Deploy factory
         dexTorFactory = new DexTorFactory(owner);
+
+        // Deploy DexTorPair
+        dexTorPair = new DexTorPair(
+            address(tokenA),
+            address(tokenB),
+            address(dexTorFactory)
+        );
     }
 }
