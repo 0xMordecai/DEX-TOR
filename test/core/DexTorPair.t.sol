@@ -17,3 +17,22 @@ contract ERC20Mock is ERC20 {
         _mint(msg.sender, initialSupply);
     }
 }
+
+contract DexTorPairTest is Test {
+    DexTorPair public dexTorPair;
+    DexTorFactory public dexTorFactory;
+    ERC20Mock public tokenA;
+    ERC20Mock public tokenB;
+    address public owner;
+
+    function setUp() public {
+        owner = makeAddr("owner");
+
+        // Deploy mock tokens
+        tokenA = new ERC20Mock("TokenA", "TKA", 1e24);
+        tokenB = new ERC20Mock("TokenB", "TKB", 1e24);
+
+        // Deploy factory
+        dexTorFactory = new DexTorFactory(owner);
+    }
+}

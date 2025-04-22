@@ -51,7 +51,7 @@ contract DexTorPair is DexTorERC20 {
     );
     event Sync(uint112 reserve0, uint112 reserve1);
 
-    constructor(address _token0, address _token1) {
+    constructor(address _token0, address _token1, address _factory) {
         if (_token0 == address(0) || _token0 == address(0)) {
             revert DexTorPair__ZeroAddress();
         }
@@ -60,7 +60,7 @@ contract DexTorPair is DexTorERC20 {
         }
         token0 = _token0;
         token1 = _token1;
-        factory = msg.sender;
+        factory = _factory;
     }
 
     uint256 private unlocked = 1;
