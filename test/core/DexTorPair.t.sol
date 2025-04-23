@@ -4,9 +4,8 @@ pragma solidity 0.8.28;
 import {Test} from "forge-std/Test.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {DexTorPair} from "src/core/DexTorPair.sol";
-import {DexTorFactory} from "src/core/DexTorFactory.sol";
 import {IDexTorPair} from "src/core/interfaces/IDexTorPair.sol";
-import {IDexTorFactory} from "src/core/interfaces/IDexTorFactory.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract ERC20Mock is ERC20 {
     constructor(
@@ -20,35 +19,26 @@ contract ERC20Mock is ERC20 {
 
 contract DexTorPairTest is Test {
     DexTorPair public dexTorPair;
-    DexTorFactory public dexTorFactory;
-    ERC20Mock public tokenA;
-    ERC20Mock public tokenB;
-    address public owner;
+    address weth = 0xdd13E55209Fd76AfE204dBda4007C227904f0a81; // token0
+    address wbtc = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063; // token1
+    address factory = makeAddr("factory");
 
     function setUp() public {
-        owner = makeAddr("owner");
-
         // Deploy mock tokens
-        tokenA = new ERC20Mock("TokenA", "TKA", 1e24);
-        tokenB = new ERC20Mock("TokenB", "TKB", 1e24);
-
-        // Deploy factory
-        dexTorFactory = new DexTorFactory(owner);
 
         // Deploy DexTorPair
         dexTorPair = new DexTorPair(
-            address(tokenA),
-            address(tokenB),
-            address(dexTorFactory)
+            address(weth),
+            address(wbtc),
+            address(factory)
         );
     }
 
-    // function testDeployment() public {
-    //     // Check token addresses
-    //     assertEq(dexTorPair.token0(), address(tokenA));
-    //     assertEq(dexTorPair.token1(), address(tokenB));
-
-    //     // Check factory address
-    //     assertEq(dexTorPair.factory(), owner);
-    // }
+    function testDeployment() public {
+        // Check token addresses
+        assertEq(dexTorPair.getToken0(), weth);
+        assertEq(dexTorPair.getToken1(), wbtc);
+        // Check factory address
+        assertEq(dexTorPair.getFactory(), factory);
+    }
 }

@@ -439,4 +439,25 @@ contract DexTorPair is DexTorERC20 {
             reserve1
         );
     }
+
+    // Getters
+    function getToken0() external view returns (address) {
+        return token0;
+    }
+
+    function getToken1() external view returns (address) {
+        return token1;
+    }
+
+    function getFactory() external view returns (address) {
+        return factory;
+    }
+
+    function getReserve0() external view returns (uint112) {
+        return reserve0;
+    }
+
+    function getReserve1() external view returns (uint112) {
+        return reserve1;
+    }
 }
