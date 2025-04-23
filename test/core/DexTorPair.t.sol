@@ -24,8 +24,6 @@ contract DexTorPairTest is Test {
     address factory = makeAddr("factory");
 
     function setUp() public {
-        // Deploy mock tokens
-
         // Deploy DexTorPair
         dexTorPair = new DexTorPair(
             address(weth),
@@ -34,7 +32,7 @@ contract DexTorPairTest is Test {
         );
     }
 
-    function testDeployment() public {
+    function testDeployment() public view {
         // Check token addresses
         assertEq(dexTorPair.getToken0(), weth);
         assertEq(dexTorPair.getToken1(), wbtc);
