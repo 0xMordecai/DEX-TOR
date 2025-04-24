@@ -202,7 +202,7 @@ contract DexTorPair is DexTorERC20 {
          */
         uint _totalSupply = totalSupply();
         /**
-         * @devIf the pool is new (_totalSupply == 0),
+         * @dev If the pool is new (_totalSupply == 0),
          * it calculates the initial liquidity tokens proportional to the geometric mean of amount0 and amount1.
          * It also permanently locks a small amount (MINIMUM_LIQUIDITY) to prevent the pool from being drained completely.
          */

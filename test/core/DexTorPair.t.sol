@@ -2,27 +2,28 @@
 pragma solidity 0.8.28;
 
 import {Test} from "forge-std/Test.sol";
-import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {DexTorERC20} from "src/core/DexTorERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {DexTorPair} from "src/core/DexTorPair.sol";
 import {IDexTorPair} from "src/core/interfaces/IDexTorPair.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 
 contract DexTorPairTest is Test {
     DexTorPair public dexTorPair;
+    DexTorERC20 dexTorERC20;
     address weth = 0xdd13E55209Fd76AfE204dBda4007C227904f0a81; // token0
     address wbtc = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063; // token1
     address factory = makeAddr("factory");
+    address user = makeAddr("user");
 
     function setUp() public {
-        // Mint mock tokens
-        ERC20Mock(weth).mint(address(this), 100 ether);
         // Deploy DexTorPair
         dexTorPair = new DexTorPair(
             address(weth),
             address(wbtc),
             address(factory)
         );
+        vm.deal(user, 100 ether);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -39,4 +40,11 @@ contract DexTorPairTest is Test {
     /*//////////////////////////////////////////////////////////////
                            Mint TESTS
     //////////////////////////////////////////////////////////////*/
+    function testMint() public {
+        uint256 amount0 = 1e18; // 1 WETH
+        uint256 amount1 = 4e8; // 4 WBTC
+
+        IERC20(weth).transfer(address(dexTorPair), amount0);
+        IERC20(wbtc).transfer(address(dexTorPair), amount1);
+    }
 }
