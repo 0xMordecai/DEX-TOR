@@ -6,16 +6,7 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {DexTorPair} from "src/core/DexTorPair.sol";
 import {IDexTorPair} from "src/core/interfaces/IDexTorPair.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
-contract ERC20Mock is ERC20 {
-    constructor(
-        string memory name,
-        string memory symbol,
-        uint256 initialSupply
-    ) ERC20(name, symbol) {
-        _mint(msg.sender, initialSupply);
-    }
-}
+import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 
 contract DexTorPairTest is Test {
     DexTorPair public dexTorPair;
@@ -24,6 +15,8 @@ contract DexTorPairTest is Test {
     address factory = makeAddr("factory");
 
     function setUp() public {
+        // Mint mock tokens
+        ERC20Mock(weth).mint(address(this), 100 ether);
         // Deploy DexTorPair
         dexTorPair = new DexTorPair(
             address(weth),
@@ -32,6 +25,9 @@ contract DexTorPairTest is Test {
         );
     }
 
+    /*//////////////////////////////////////////////////////////////
+                           CONSTRUCTOR TESTS
+    //////////////////////////////////////////////////////////////*/
     function testDeployment() public view {
         // Check token addresses
         assertEq(dexTorPair.getToken0(), weth);
@@ -39,4 +35,8 @@ contract DexTorPairTest is Test {
         // Check factory address
         assertEq(dexTorPair.getFactory(), factory);
     }
+
+    /*//////////////////////////////////////////////////////////////
+                           Mint TESTS
+    //////////////////////////////////////////////////////////////*/
 }
