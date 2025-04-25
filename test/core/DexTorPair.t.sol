@@ -17,8 +17,9 @@ contract DexTorPairTest is Test {
     address user = makeAddr("user");
 
     function setUp() public {
+        bytes32 salt = keccak256(abi.encodePacked(weth, wbtc));
         // Deploy DexTorPair
-        dexTorPair = new DexTorPair(
+        dexTorPair = new DexTorPair{salt: salt}(
             address(weth),
             address(wbtc),
             address(factory)
