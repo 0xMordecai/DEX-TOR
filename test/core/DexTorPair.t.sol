@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
-import {Test} from "forge-std/Test.sol";
+import {Test, console} from "forge-std/Test.sol";
 import {DexTorERC20} from "src/core/DexTorERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {DexTorPair} from "src/core/DexTorPair.sol";
@@ -44,8 +44,11 @@ contract DexTorPairTest is Test {
     function testMint() public {
         uint256 amount0 = 1e18; // 1 WETH
         uint256 amount1 = 4e8; // 4 WBTC
-
+        vm.startPrank(user);
         IERC20(weth).transfer(address(dexTorPair), amount0);
         IERC20(wbtc).transfer(address(dexTorPair), amount1);
+        vm.stopPrank();
+        uint liquidity = IDexTorPair(address(dexTorPair)).mint(user);
+        console.log("liquidty: ", liquidity);
     }
 }
