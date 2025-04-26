@@ -13,14 +13,14 @@ contract DexTorPairTest is Test {
     DexTorERC20 dexTorERC20;
     ERC20Mock token0;
     ERC20Mock token1;
-    address wbtc = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063; // token1
     address factory = makeAddr("factory");
     address user = makeAddr("user");
+    bytes32 salt;
 
     function setUp() public {
         token0 = new ERC20Mock("Token0", "tk0", user, 1e24);
         token1 = new ERC20Mock("Token1", "tk1", user, 1e24);
-        bytes32 salt = keccak256(abi.encodePacked(token0, token1, factory));
+        salt = keccak256(abi.encodePacked(token0, token1, factory));
         // Deploy DexTorPair
         dexTorPair = new DexTorPair{salt: salt}(
             address(token0),
@@ -43,8 +43,47 @@ contract DexTorPairTest is Test {
         assertEq(dexTorPair.getFactory(), factory);
     }
 
+    function testRevertsIfTokensAddressAreZero() public {
+        vm.expectRevert(DexTorPair.DexTorPair__ZeroAddress.selector);
+        new DexTorPair{salt: salt}(
+            address(0),
+            address(token1),
+            address(factory)
+        );
+    }
+
+    function testRevertsIfTokensAddressAreSame() public {
+        vm.expectRevert(
+            DexTorPair.DexTorPair__TokensHaveSameAddresses.selector
+        );
+        new DexTorPair{salt: salt}(
+            address(token0),
+            address(token0),
+            address(factory)
+        );
+    }
+
+    function testRevertsIfFactoryAddressIsZero() public {
+        vm.expectRevert(DexTorPair.DexTorPair__FactoryAddressIsZero.selector);
+        new DexTorPair{salt: salt}(
+            address(token0),
+            address(token1),
+            address(0)
+        );
+    }
+
+    // _safeTransfer
+    function testRevertsIfSafeTransferFails() public {
+        // Transfer tokens to the pair
+        token0.transferInternal(user, address(dexTorPair), 1e18);
+        token1.transferInternal(user, address(dexTorPair), 1e18);
+        // Expect revert when calling _safeTransfer with insufficient balance
+        vm.expectRevert(DexTorPair.DexTorPair__TransferFailed.selector);
+        dexTorPair._safeTransfer(address(token0), user, 2e18);
+    }
+
     /*//////////////////////////////////////////////////////////////
-                           Mint TESTS
+                           Public TESTS
     // //////////////////////////////////////////////////////////////*/
     // function testMint() public {
     //     uint256 amount0 = 1e18; // 1 WETH
@@ -57,7 +96,9 @@ contract DexTorPairTest is Test {
     //     console.log("liquidty: ", liquidity);
     // }
 
-    // Getters
+    /*//////////////////////////////////////////////////////////////
+                           GETTERS TESTS
+    // //////////////////////////////////////////////////////////////*/
 
     function testGetToken0() public view {
         assertEq(dexTorPair.getToken0(), address(token0));

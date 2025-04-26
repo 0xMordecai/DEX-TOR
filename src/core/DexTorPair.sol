@@ -11,6 +11,7 @@ contract DexTorPair is DexTorERC20, ReentrancyGuard {
     using Math for uint;
     error DexTorPair__ZeroAddress();
     error DexTorPair__TokensHaveSameAddresses();
+    error DexTorPair__FactoryAddressIsZero();
     error DexTorPair__BurnAmountExceedsBalance();
     error DexTorPair__LOCKED();
     error DexTorPair__BalanceExceedsUint112Max();
@@ -53,8 +54,11 @@ contract DexTorPair is DexTorERC20, ReentrancyGuard {
     event Sync(uint112 reserve0, uint112 reserve1);
 
     constructor(address _token0, address _token1, address _factory) {
-        if (_token0 == address(0) || _token0 == address(0)) {
+        if (_token0 == address(0) || _token1 == address(0)) {
             revert DexTorPair__ZeroAddress();
+        }
+        if (_factory == address(0)) {
+            revert DexTorPair__FactoryAddressIsZero();
         }
         if (_token0 == _token1) {
             revert DexTorPair__TokensHaveSameAddresses();
@@ -64,7 +68,7 @@ contract DexTorPair is DexTorERC20, ReentrancyGuard {
         factory = _factory;
     }
 
-    function _safeTransfer(address token, address to, uint256 value) private {
+    function _safeTransfer(address token, address to, uint256 value) public {
         (bool success, ) = token.call(
             abi.encodeWithSignature("transfer(address,uint256)", to, value)
         );
