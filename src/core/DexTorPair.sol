@@ -4,8 +4,9 @@ import {UQ112x112, Math} from "src/core/libraries/UQ112x112.sol";
 import {IDexTorFactory} from "src/core/interfaces/IDexTorFactory.sol";
 import {DexTorERC20} from "src/core/DexTorERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract DexTorPair is DexTorERC20 {
+contract DexTorPair is DexTorERC20, ReentrancyGuard {
     using UQ112x112 for uint224;
     using Math for uint;
     error DexTorPair__ZeroAddress();
@@ -61,16 +62,6 @@ contract DexTorPair is DexTorERC20 {
         token0 = _token0;
         token1 = _token1;
         factory = _factory;
-    }
-
-    uint256 private unlocked = 1;
-    modifier lock() {
-        if (unlocked != 1) {
-            revert DexTorPair__LOCKED();
-        }
-        unlocked = 0;
-        _;
-        unlocked = 1;
     }
 
     function getReserves()
@@ -174,7 +165,7 @@ contract DexTorPair is DexTorERC20 {
         }
     }
 
-    function mint(address to) external lock returns (uint liquidity) {
+    function mint(address to) external nonReentrant returns (uint liquidity) {
         /**
          * @dev Retrieve Current Reserves
          */
@@ -252,7 +243,7 @@ contract DexTorPair is DexTorERC20 {
      */
     function burn(
         address to
-    ) external lock returns (uint amount0, uint amount1) {
+    ) external nonReentrant returns (uint amount0, uint amount1) {
         /**
          * @dev Retrieve Current Reserves
          */
@@ -331,7 +322,7 @@ contract DexTorPair is DexTorERC20 {
         uint amount1Out,
         address to,
         bytes calldata data
-    ) external lock {
+    ) external nonReentrant {
         // Ensure at least one of the output amounts is greater than zero
         if (amount0Out <= 0 || amount1Out <= 0) {
             revert DexTorPair__ZeroAmounts();
@@ -416,7 +407,7 @@ contract DexTorPair is DexTorERC20 {
     /**
      * @dev // force balances to match reserves
      */
-    function skim(address to) external lock {
+    function skim(address to) external nonReentrant {
         address _token0 = token0; // gas savings
         address _token1 = token1; // gas savings
         uint amount0 = IERC20(_token0).balanceOf(address(this)) -
@@ -431,7 +422,7 @@ contract DexTorPair is DexTorERC20 {
     /**
      * @dev force reserves to match balances
      */
-    function sync() external lock {
+    function sync() external nonReentrant {
         _update(
             IERC20(token0).balanceOf(address(this)),
             IERC20(token1).balanceOf(address(this)),
