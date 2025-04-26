@@ -66,7 +66,7 @@ contract DexTorFactory is IDexTorFactory {
          * @dev Use a deterministic deployment mechanism with a unique salt.
          * The salt is derived from the hashed combination of the two token addresses.
          */
-        bytes32 salt = keccak256(abi.encodePacked(token0, token1));
+        bytes32 salt = keccak256(abi.encodePacked(token0, token1, feeToSetter));
 
         // Deploy the new pair contract using the `DexTorPair` constructor
         pair = address(new DexTorPair{salt: salt}(token0, token1, feeToSetter));

@@ -3,19 +3,19 @@ pragma solidity 0.8.28;
 
 import "forge-std/Test.sol";
 import {DexTorPair} from "src/core/DexTorPair.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {ERC20Mock} from "test/mock/ERC20Mock.sol";
 
 contract DexTorPairAddLiquidityTest is Test {
     DexTorPair public dexTorPair;
-    IERC20 public token0;
-    IERC20 public token1;
+    ERC20Mock public token0;
+    ERC20Mock public token1;
     address public user;
     address public factory;
 
     function setUp() public {
         // Deploy mock tokens
-        token0 = 0xdd13E55209Fd76AfE204dBda4007C227904f0a81; // token0
-        token1 = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063; // token1
+        token0 = new ERC20Mock("Token0", "TK0", msg.sender, 1e24); // 1 million tokens
+        token1 = new ERC20Mock("Token1", "TK1", msg.sender, 1e24); // 1 million tokens
 
         // Set up addresses
         user = makeAddr("user");
@@ -32,23 +32,23 @@ contract DexTorPairAddLiquidityTest is Test {
     function testAddLiquidityInitial() public {
         uint256 amount0 = 1e18; // 1 Token0
         uint256 amount1 = 1e18; // 1 Token1
-
+        console.log("one -----------");
         // User approves DexTorPair to spend tokens
         vm.startPrank(user);
         token0.approve(address(dexTorPair), amount0);
         token1.approve(address(dexTorPair), amount1);
-
+        console.log("two -----------");
         // Transfer tokens to DexTorPair
         token0.transfer(address(dexTorPair), amount0);
         token1.transfer(address(dexTorPair), amount1);
-
+        console.log("three -----------");
         // Call mint to add liquidity
         uint256 liquidity = dexTorPair.mint(user);
         vm.stopPrank();
-
+        console.log("four -----------");
         // Assert liquidity minted
         assertGt(liquidity, 0, "Liquidity should be greater than 0");
-
+        console.log("five -----------");
         // Assert reserves updated
         (uint112 reserve0, uint112 reserve1, ) = dexTorPair.getReserves();
         assertEq(reserve0, amount0, "Reserve0 should match amount0");

@@ -2,11 +2,11 @@
 pragma solidity 0.8.28;
 
 import {Test, console} from "forge-std/Test.sol";
-import {DexTorERC20} from "src/core/DexTorERC20.sol";
+import {DexTorERC20, ERC20} from "src/core/DexTorERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {DexTorPair} from "src/core/DexTorPair.sol";
 import {IDexTorPair} from "src/core/interfaces/IDexTorPair.sol";
-import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
+import {ERC20Mock} from "test/mock/ERC20Mock.sol";
 
 contract DexTorPairTest is Test {
     DexTorPair public dexTorPair;
@@ -17,6 +17,8 @@ contract DexTorPairTest is Test {
     address user = makeAddr("user");
 
     function setUp() public {
+        ERC20Mock token0 = new ERC20Mock("Token0", "tk0", user, 1e24);
+        ERC20Mock token1 = new ERC20Mock("Token1", "tk1", user, 1e24);
         bytes32 salt = keccak256(abi.encodePacked(weth, wbtc));
         // Deploy DexTorPair
         dexTorPair = new DexTorPair{salt: salt}(
@@ -24,7 +26,9 @@ contract DexTorPairTest is Test {
             address(wbtc),
             address(factory)
         );
-        vm.deal(user, 100 ether);
+        // Fund user with tokens
+        ERC20Mock(weth).mint(user, 1e20); // 100 tokens
+        ERC20Mock(wbtc).mint(user, 1e20); // 100 tokens
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -45,8 +49,8 @@ contract DexTorPairTest is Test {
         uint256 amount0 = 1e18; // 1 WETH
         uint256 amount1 = 4e8; // 4 WBTC
         vm.startPrank(user);
-        IERC20(weth).transfer(address(dexTorPair), amount0);
-        IERC20(wbtc).transfer(address(dexTorPair), amount1);
+        ERC20Mock(weth).transferInternal(user, address(dexTorPair), amount0);
+        ERC20Mock(wbtc).transferInternal(user, address(dexTorPair), amount1);
         vm.stopPrank();
         uint liquidity = IDexTorPair(address(dexTorPair)).mint(user);
         console.log("liquidty: ", liquidity);
