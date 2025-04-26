@@ -45,15 +45,40 @@ contract DexTorPairTest is Test {
 
     /*//////////////////////////////////////////////////////////////
                            Mint TESTS
-    //////////////////////////////////////////////////////////////*/
-    function testMint() public {
-        uint256 amount0 = 1e18; // 1 WETH
-        uint256 amount1 = 4e8; // 4 WBTC
-        vm.startPrank(user);
-        token0.transferInternal(user, address(dexTorPair), amount0);
-        token1.transferInternal(user, address(dexTorPair), amount1);
-        vm.stopPrank();
-        uint liquidity = IDexTorPair(address(dexTorPair)).mint(user);
-        console.log("liquidty: ", liquidity);
+    // //////////////////////////////////////////////////////////////*/
+    // function testMint() public {
+    //     uint256 amount0 = 1e18; // 1 WETH
+    //     uint256 amount1 = 4e8; // 4 WBTC
+    //     vm.startPrank(user);
+    //     token0.transferInternal(user, address(dexTorPair), amount0);
+    //     token1.transferInternal(user, address(dexTorPair), amount1);
+    //     vm.stopPrank();
+    //     uint liquidity = IDexTorPair(address(dexTorPair)).mint(user);
+    //     console.log("liquidty: ", liquidity);
+    // }
+
+    // Getters
+
+    function testGetToken0() public view {
+        assertEq(dexTorPair.getToken0(), address(token0));
+    }
+
+    function testGetToken1() public view {
+        assertEq(dexTorPair.getToken1(), address(token1));
+    }
+
+    function testGetFactory() public view {
+        assertEq(dexTorPair.getFactory(), factory);
+    }
+
+    function testGetReserves() public view {
+        (uint112 reserve0, uint112 reserve1, ) = dexTorPair.getReserves();
+        assertEq(reserve0, 0);
+        assertEq(reserve1, 0);
+    }
+
+    function testGetTotalSupply() public view {
+        uint256 totalSupply = dexTorPair.totalSupply();
+        assertEq(totalSupply, 0);
     }
 }

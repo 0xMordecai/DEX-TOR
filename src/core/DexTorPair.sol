@@ -64,20 +64,6 @@ contract DexTorPair is DexTorERC20, ReentrancyGuard {
         factory = _factory;
     }
 
-    function getReserves()
-        public
-        view
-        returns (
-            uint112 _reserve0,
-            uint112 _reserve1,
-            uint32 _blockTimestampLast
-        )
-    {
-        _reserve0 = reserve0;
-        _reserve1 = reserve1;
-        _blockTimestampLast = blockTimestampLast;
-    }
-
     function _safeTransfer(address token, address to, uint256 value) private {
         (bool success, ) = token.call(
             abi.encodeWithSignature("transfer(address,uint256)", to, value)
@@ -432,6 +418,20 @@ contract DexTorPair is DexTorERC20, ReentrancyGuard {
     }
 
     // Getters
+    function getReserves()
+        public
+        view
+        returns (
+            uint112 _reserve0,
+            uint112 _reserve1,
+            uint32 _blockTimestampLast
+        )
+    {
+        _reserve0 = reserve0;
+        _reserve1 = reserve1;
+        _blockTimestampLast = blockTimestampLast;
+    }
+
     function getToken0() external view returns (address) {
         return token0;
     }
