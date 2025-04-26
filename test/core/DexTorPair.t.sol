@@ -11,24 +11,25 @@ import {ERC20Mock} from "test/mock/ERC20Mock.sol";
 contract DexTorPairTest is Test {
     DexTorPair public dexTorPair;
     DexTorERC20 dexTorERC20;
-    address weth = 0xdd13E55209Fd76AfE204dBda4007C227904f0a81; // token0
+    ERC20Mock token0;
+    ERC20Mock token1;
     address wbtc = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063; // token1
     address factory = makeAddr("factory");
     address user = makeAddr("user");
 
     function setUp() public {
-        ERC20Mock token0 = new ERC20Mock("Token0", "tk0", user, 1e24);
-        ERC20Mock token1 = new ERC20Mock("Token1", "tk1", user, 1e24);
-        bytes32 salt = keccak256(abi.encodePacked(weth, wbtc));
+        token0 = new ERC20Mock("Token0", "tk0", user, 1e24);
+        token1 = new ERC20Mock("Token1", "tk1", user, 1e24);
+        bytes32 salt = keccak256(abi.encodePacked(token0, token1, factory));
         // Deploy DexTorPair
         dexTorPair = new DexTorPair{salt: salt}(
-            address(weth),
-            address(wbtc),
+            address(token0),
+            address(token1),
             address(factory)
         );
         // Fund user with tokens
-        ERC20Mock(weth).mint(user, 1e20); // 100 tokens
-        ERC20Mock(wbtc).mint(user, 1e20); // 100 tokens
+        token0.mint(user, 1e20); // 100 tokens
+        token1.mint(user, 1e20); // 100 tokens
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -36,8 +37,8 @@ contract DexTorPairTest is Test {
     //////////////////////////////////////////////////////////////*/
     function testDeployment() public view {
         // Check token addresses
-        assertEq(dexTorPair.getToken0(), weth);
-        assertEq(dexTorPair.getToken1(), wbtc);
+        assertEq(dexTorPair.getToken0(), address(token0));
+        assertEq(dexTorPair.getToken1(), address(token1));
         // Check factory address
         assertEq(dexTorPair.getFactory(), factory);
     }
@@ -49,8 +50,8 @@ contract DexTorPairTest is Test {
         uint256 amount0 = 1e18; // 1 WETH
         uint256 amount1 = 4e8; // 4 WBTC
         vm.startPrank(user);
-        ERC20Mock(weth).transferInternal(user, address(dexTorPair), amount0);
-        ERC20Mock(wbtc).transferInternal(user, address(dexTorPair), amount1);
+        token0.transferInternal(user, address(dexTorPair), amount0);
+        token1.transferInternal(user, address(dexTorPair), amount1);
         vm.stopPrank();
         uint liquidity = IDexTorPair(address(dexTorPair)).mint(user);
         console.log("liquidty: ", liquidity);
