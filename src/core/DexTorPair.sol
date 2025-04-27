@@ -69,6 +69,7 @@ contract DexTorPair is DexTorERC20, ReentrancyGuard {
     }
 
     function _safeTransfer(address token, address to, uint256 value) public {
+        // Return to private or internal after testing
         (bool success, ) = token.call(
             abi.encodeWithSignature("transfer(address,uint256)", to, value)
         );
@@ -83,7 +84,8 @@ contract DexTorPair is DexTorERC20, ReentrancyGuard {
         uint balance1,
         uint112 _reserve0,
         uint112 _reserve1
-    ) private {
+    ) public {
+        // Return to private or internal after testing
         if (balance0 > type(uint112).max || balance1 > type(uint112).max) {
             revert DexTorPair__BalanceExceedsUint112Max();
         }
