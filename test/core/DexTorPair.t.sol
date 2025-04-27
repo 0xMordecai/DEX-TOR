@@ -83,6 +83,16 @@ contract DexTorPairTest is Test {
     }
 
     // function _update
+    function testRevertsIfBalanceExceedsUnit112Max() public {
+        // Transfer tokens to the pair
+        token0.transferInternal(user, address(dexTorPair), 1e18);
+        token1.transferInternal(user, address(dexTorPair), 1e18);
+        // Expect revert when calling _update with balance exceeding uint112 max
+        vm.expectRevert(
+            DexTorPair.DexTorPair__BalanceExceedsUint112Max.selector
+        );
+        dexTorPair._update(2 ** 112, 0, 0, 0);
+    }
 
     /*//////////////////////////////////////////////////////////////
                            Public TESTS
