@@ -9,6 +9,25 @@ import {IDexTorPair} from "src/core/interfaces/IDexTorPair.sol";
 import {ERC20Mock} from "test/mock/ERC20Mock.sol";
 
 contract DexTorPairTest is Test {
+    //events
+    event Mint(address indexed sender, uint256 amount0, uint256 amount1);
+    event Burn(
+        address indexed sender,
+        uint256 amount0,
+        uint256 amount1,
+        address indexed to
+    );
+    event Swap(
+        address indexed sender,
+        uint256 amount0In,
+        uint256 amount1In,
+        uint256 amount0Out,
+        uint256 amount1Out,
+        address indexed to
+    );
+    event Sync(uint112 reserve0, uint112 reserve1);
+
+    // state variables
     DexTorPair public dexTorPair;
     DexTorERC20 dexTorERC20;
     ERC20Mock token0;
@@ -92,6 +111,16 @@ contract DexTorPairTest is Test {
             DexTorPair.DexTorPair__BalanceExceedsUint112Max.selector
         );
         dexTorPair._update(2 ** 112, 0, 0, 0);
+    }
+
+    function testEmitsSyncEventAfterUpdate() public {
+        // Transfer tokens to the pair
+        token0.transferInternal(user, address(dexTorPair), 1e18);
+        token1.transferInternal(user, address(dexTorPair), 1e18);
+        // Expect Sync event to be emitted after _update
+        vm.expectEmit(true, true, true, true);
+        emit Sync(0, 0);
+        dexTorPair._update(0, 0, 0, 0);
     }
 
     /*//////////////////////////////////////////////////////////////
