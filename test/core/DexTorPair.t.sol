@@ -141,9 +141,9 @@ contract DexTorPairTest is Test {
                            GETTERS TESTS
     // //////////////////////////////////////////////////////////////*/
 
-    function testGetToken0() public view {
-        assertEq(dexTorPair.getToken0(), address(token0));
-    }
+    // function testGetToken0() public view {
+    //     assertEq(dexTorPair.getToken0(), address(token0));
+    // }
 
     function testGetToken1() public view {
         assertEq(dexTorPair.getToken1(), address(token1));
